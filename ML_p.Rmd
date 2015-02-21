@@ -1,0 +1,103 @@
+# Building classification model on sport exercises data
+
+## Executive summary
+
+In this work we are interesting in prediction the manner in which 6 participants did the special sport exercises using data from accelerometers on the belt, forearm, arm, and dumbell of participants. Data was collected when they were performing barbell lifts correctly and incorrectly in 5 different ways. 
+
+This classification problem was solved with random forest model. Overall Accuracy = 0.98 on test set. Worst accuracy class C = 0.97.
+
+## Data analyses
+
+Raw data summary:
+```{r}
+inputdata <- read.csv("./pml-training.csv", na.strings=c("NA","#DIV/0!",""))
+inputdataValidate <- read.csv("./pml-testing.csv", na.strings=c("NA","#DIV/0!",""))
+
+#summary(inputdata) #can be used to see fetures values distribution
+dim(inputdata)
+```
+
+Raw data has a lot of useless features (columns): big part of NA values, id, timestamp, etc. 
+
+Clearing the data:
+
+```{r}
+#get columns with less than 90% of NA
+goodcolumns <- colSums(is.na(inputdata)) < 0.9 * dim(inputdata)[1]
+cleandata <- inputdata[goodcolumns]
+
+#remove useless features
+unusefulnames <- c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window", "num_window")
+cleandata <- cleandata[!(colnames(cleandata) %in% unusefulnames)]
+dim(cleandata)
+
+#remove useless features from validate set
+cleanvalidate <- inputdataValidate[goodcolumns]
+cleanvalidate <- cleanvalidate[!(colnames(cleanvalidate) %in% unusefulnames)]
+```
+
+Finally, there are 19622 objects of 53 columns in cleandata: 52 features and one target lable - classe.
+
+The same cleaning procedure for inputdataValidate should be done.
+
+Data should be split into training and testing database to evaluate accuracy of prediction on sample. 
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(caret)
+library(AppliedPredictiveModeling)
+library(ElemStatLearn)
+library(kernlab)
+```
+
+```{r}
+inTrain = createDataPartition(cleandata$classe, p = 0.75, list=FALSE)
+training = cleandata[ inTrain,]
+testing = cleandata[-inTrain,]
+
+summary(training$classe) #classe distribution in training set
+```
+
+
+## Model selection and training
+
+There are a lot of train models, but random forest is One of the most suitable model for multiclassification, it shows good results on test data (see below), so it's not neccesary to check all existing train models (actually, svmRadial, knn, glm models trained with the same parameters have lower accuracy than rf on provided test set).
+
+Deafult train function use bootstrap resampling (25 reps), but train params can be set manually, in this case 5-fold Cross vaidation is used, it makes model more robust and reduce overfitting.
+
+```{r}
+trainparams <- trainControl(method = "cv", number = 5, allowParallel = TRUE, verboseIter = TRUE)
+```
+
+It's not neccesary, but it's usefull to use data preprocessing, for example pca, to decrease noise of  data features (predictors) or evem their number.
+
+```{r results='hide', message=FALSE, warning=FALSE}
+m_rf <- train(classe ~ ., data = training, method = "rf", preProcess="pca", trControl = trainparams)
+```
+
+N.b. random forests training time is much longer than other "simple" methods, but classification perfomance checked with out of sample erreo is better.
+
+## Out of sample error
+
+The confusion matrix shows the expected prediction performance on an test set. 
+The accuracy on test set shows the expected out of sample error of prediction on an new data.
+
+```{r}
+confusionMatrix(testing$classe,predict(m_rf,testing))
+```
+
+Overall Accuracy is good.
+
+## Validate evaluation
+
+Predict classification of validate set with rf model:
+
+```{r}
+results <- predict(m_rf, cleanvalidate)
+results
+```
+
+
+## Summary
+Multiclassification problem was solved with random forest model. 5-fold cross validation, pca data preprocessing andcleaned (removed unuseful features) data was used for model training. 
+Overall Accuracy = 0.98 on test set. Worst accuracy class C has 0.97.
+20 of 20 objects from validate set were correctly predicted using trained model.

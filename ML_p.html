@@ -57,7 +57,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <div id="executive-summary" class="section level2">
 <h2>Executive summary</h2>
 <p>In this work we are interesting in prediction the manner in which 6 participants did the special sport exercises using data from accelerometers on the belt, forearm, arm, and dumbell of participants. Data was collected when they were performing barbell lifts correctly and incorrectly in 5 different ways.</p>
-<p>This classification problem was solved with random forest model. Overall Accuracy = 0.978 on test set. Worst accuracy class C = 0.97.</p>
+<p>This classification problem was solved with random forest model. Overall Accuracy = 0.98 on test set. Worst accuracy class C = 0.97.</p>
 </div>
 <div id="data-analyses" class="section level2">
 <h2>Data analyses</h2>
@@ -110,17 +110,50 @@ summary(training$classe) #classe distribution in training set</code></pre>
 <h2>Out of sample error</h2>
 <p>The confusion matrix shows the expected prediction performance on an test set. The accuracy on test set shows the expected out of sample error of prediction on an new data.</p>
 <pre class="r"><code>confusionMatrix(testing$classe,predict(m_rf,testing))</code></pre>
-<p>Overall Accuracy = 0.9782 Worst Balanced Accuracy among all classes is 0.97 of class C - it’s a good result.</p>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1387    3    2    2    1
+##          B    6  932    8    2    1
+##          C    2   14  835    4    0
+##          D    3    0   30  769    2
+##          E    0    6    5    4  886
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9806          
+##                  95% CI : (0.9764, 0.9843)
+##     No Information Rate : 0.2851          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9755          
+##  Mcnemar's Test P-Value : 0.000127        
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9921   0.9759   0.9489   0.9846   0.9955
+## Specificity            0.9977   0.9957   0.9950   0.9915   0.9963
+## Pos Pred Value         0.9943   0.9821   0.9766   0.9565   0.9834
+## Neg Pred Value         0.9969   0.9942   0.9889   0.9971   0.9990
+## Prevalence             0.2851   0.1947   0.1794   0.1593   0.1815
+## Detection Rate         0.2828   0.1900   0.1703   0.1568   0.1807
+## Detection Prevalence   0.2845   0.1935   0.1743   0.1639   0.1837
+## Balanced Accuracy      0.9949   0.9858   0.9719   0.9881   0.9959</code></pre>
+<p>Overall Accuracy is good.</p>
 </div>
 <div id="validate-evaluation" class="section level2">
 <h2>Validate evaluation</h2>
 <p>Predict classification of validate set with rf model:</p>
 <pre class="r"><code>results &lt;- predict(m_rf, cleanvalidate)
 results</code></pre>
+<pre><code>##  [1] B A B A A B D B A A B C B A E E A B B B
+## Levels: A B C D E</code></pre>
 </div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<p>Multiclassification problem was solved with random forest model. 5-fold cross validation, pca data preprocessing andcleaned (removed unuseful features) data was used for model training. Overall Accuracy = 0.9782 on test set. Worst accuracy class C has 0.97. 19 of 20 objects from validate set were correctly predicted with this model. The only error occured with missclassification of class C object.</p>
+<p>Multiclassification problem was solved with random forest model. 5-fold cross validation, pca data preprocessing and cleaned (removed unuseful features) data was used for model training. Overall Accuracy = 0.98 on test set. Worst accuracy class C has 0.97. 20 of 20 objects from validate set were correctly predicted using trained model.</p>
 </div>
 </div>
 
